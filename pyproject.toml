@@ -20,6 +20,7 @@ tensorflow-text = {path = "wheels/tensorflow_text-2.13.0-cp310-cp310-macosx_11_0
 tensorflow = "^2.16.1"
 scikit-learn = "^1.4.1.post1"
 contractions = "^0.1.73"
+transformers = "^4.38.2"
 
 
 [tool.poetry.group.dev.dependencies]
