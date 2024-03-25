@@ -10,7 +10,7 @@ class Encoder(tf.keras.layers.Layer):
         super(Encoder, self).__init__()
         self.multiheadattention = MultiHeadAttention(num_heads, embedding_dimension)
         self.feedforward = tf.keras.Sequential([
-            Dense(hidden_dimension, activation = 'relu')
+            Dense(hidden_dimension, activation = 'relu'),
             Dense(embedding_dimension)
         ])
 

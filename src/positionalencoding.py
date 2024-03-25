@@ -8,7 +8,7 @@ class PositionalEncoding(tf.keras.layers.Layer):
         super(PositionalEncoding, self).__init__()
         self.max_seq_len = max_length
         self.d_model = embedding_dimension
-        self.pos_encode = self.positional_encoding(max_length, embedding_dimension)
+        self.pos_encoding = self.positional_encoding(max_length, embedding_dimension)
 
     def get_angles(self, pos, idx, embedding_dimension):
         angle = 1 / tf.pow(10000, (2 * (idx // 2)) / tf.cast(embedding_dimension, tf.float32))
@@ -20,15 +20,17 @@ class PositionalEncoding(tf.keras.layers.Layer):
                                      embedding_dimension)
 
         # sine is even
-        angle_rad[:, 0::2] = tf.sin(angle_rad[:, 0::2])
+        angle_sin = tf.math.sin(angle_rad[:, 0::2])
 
         # cosine is odd
-        angle_rad[:, 1::2] = tf.cos(angle_rad[:, 1::2])
+        angle_cos = tf.math.cos(angle_rad[:, 1::2])
 
-        pos_encoding = tf.cast(angle_rad, dtype=tf.float32)
-        return pos_encoding
+        pos_encoding = tf.stack([angle_sin, angle_cos], axis=2)
+        pos_encoding = tf.reshape(pos_encoding, [max_length, embedding_dimension])
+
+        return tf.cast(pos_encoding, dtype=tf.float32)
 
     def call(self, inputs):
-        return inputs + self.pos_encoding[:inputs.shape[1], :]
-
+        batch_size = tf.shape(inputs)[0]
+        return inputs + self.pos_encoding[:batch_size, :self.max_seq_len]
 

@@ -7,12 +7,12 @@ class Decoder(tf.keras.layers.Layer):
     transformer decoder
     """
 
-    def __int__(self, embedding_dimension, num_heads, hidden_dimension, dropout_rate=0.2):
+    def __init__(self, embedding_dimension, num_heads, hidden_dimension, dropout_rate=0.2):
         super(Decoder, self).__init__()
         self.multiheadattention1 = MultiHeadAttention(num_heads, embedding_dimension)
         self.multiheadattention2 = MultiHeadAttention(num_heads, embedding_dimension)
         self.feedforward = tf.keras.Sequential([
-            Dense(hidden_dimension, activation='relu')
+            Dense(hidden_dimension, activation='relu'),
             Dense(embedding_dimension)
         ])
 
@@ -23,8 +23,8 @@ class Decoder(tf.keras.layers.Layer):
         self.dropout2 = Dropout(dropout_rate)
         self.dropout3 = Dropout(dropout_rate)
 
-    def call(self, input, encoder_out, training_bool, futrue_mask, decoding_padding_mask):
-        attn_out1, attn_weights1 = self.multiheadattention1(input, input, input, futrue_mask)
+    def call(self, input, encoder_out, training_bool, future_mask, decoding_padding_mask):
+        attn_out1, attn_weights1 = self.multiheadattention1(input, input, input, future_mask)
         attn_out1 = self.dropout1(attn_out1, training=training_bool)
         out1 = self.normlayer1(attn_out1 + input)
 
