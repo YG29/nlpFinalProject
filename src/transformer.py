@@ -19,9 +19,11 @@ class Transformer(tf.keras.Model):
                  input_vocab_size, target_vocab_size, max_len_input, max_len_output,
                  dropout_rate=0.2):
         super(Transformer, self).__init__()
+
         self.embedding_dimension = embedding_dimension
         self.encoder_embedding = Embedding(input_vocab_size, embedding_dimension)
         self.decoder_embedding = Embedding(target_vocab_size, embedding_dimension)
+
         self.pos_encoding = PositionalEncoding(max_len_input, embedding_dimension)
         self.decoder_pos_encoding = PositionalEncoding(max_len_output, embedding_dimension)
 
@@ -36,22 +38,32 @@ class Transformer(tf.keras.Model):
     def call(self, input, target, encoding_padding_mask,
              future_mask, decoding_padding_mask, training_bool):
         input_embedding = self.encoder_embedding(input)
+        print("input_embedding 1 shape:", input_embedding.shape)
         input_embedding *= tf.math.sqrt(tf.cast(self.embedding_dimension, tf.float32))
+        print("input_embedding 2 sqrt dot shape:", input_embedding.shape)
         input_embedding = self.pos_encoding(input_embedding)
+        print("position encoding:", input_embedding.shape)
 
         target_embedding = self.decoder_embedding(target)
+        print("target embedding 1 shape:", target_embedding.shape)
         target_embedding *= tf.math.sqrt(tf.cast(self.embedding_dimension, tf.float32))
+        print("target embedding 2 sqrt dot shape:", target_embedding.shape)
         target_embedding = self.decoder_pos_encoding(target_embedding)
+        print("decoder_pos encoding shape:", target_embedding.shape)
 
         encoder_output = input_embedding
+
         for encoder_layer in self.encoder_layers:
-            encoder_output = encoder_layer(encoder_output, encoding_padding_mask, training_bool)
+            encoder_output = encoder_layer(encoder_output, encoding_padding_mask, training_bool=training_bool)
 
         decoder_output = target_embedding
+
         for decoder_layer in self.decoder_layers:
-            decoder_output, attn_weights1, attn_weights2 = decoder_layer(decoder_output, encoder_output, future_mask, decoding_padding_mask, training_bool)
+            decoder_output, attn_weights1, attn_weights2 = decoder_layer(decoder_output, encoder_output, future_mask, decoding_padding_mask, training_bool=training_bool)
 
         decoder_output = self.dropout(decoder_output, training=training_bool)
+        print("decoder_output shape:", decoder_output.shape)
         final_output = self.final_layer(decoder_output)
+        print("final_output shape:", final_output.shape)
 
         return final_output, attn_weights1, attn_weights2
